@@ -194,7 +194,36 @@ function configReady(){ return !!(CONFIG.CLIENT_ID&&CONFIG.SPREADSHEET_ID&&CONFI
     <button class="btn btn-ghost" onclick="enterOffline()" style="width:100%;justify-content:center">Entrar sin Google Drive</button>
     <p style="font-size:11px;color:var(--muted);margin-top:20px">Solo usuarios de tu organización pueden acceder</p>
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
-      <button onclick="openSetupModal()" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:12px;font-family:var(--font-body)">⚙️ Configurar credenciales de Google</button>
+      <button onclick="openSetupPanel()" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:12px;font-family:var(--font-body)">⚙️ Configurar credenciales de Google</button>
+    <!-- SETUP INLINE PANEL -->
+    <div id="setup-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:none;align-items:center;justify-content:center;padding:20px">
+      <div style="background:#1a1d27;border:1px solid #2e3347;border-radius:16px;width:100%;max-width:520px;padding:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700">⚙️ Configuración de Google</div>
+          <button onclick="document.getElementById('setup-panel').style.display='none'" style="background:#22263a;border:none;color:#94a3b8;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">×</button>
+        </div>
+        <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px;font-size:12px;color:#3b82f6;margin-bottom:20px;line-height:1.8">
+          🔒 Se guardan <strong>solo en este navegador</strong>. El archivo HTML queda limpio para GitHub.
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;font-weight:500">OAuth Client ID <span style="color:#64748b;font-weight:400">(termina en .apps.googleusercontent.com)</span></div>
+          <input type="text" id="sp-client" placeholder="123456789-abc.apps.googleusercontent.com" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-family:monospace;font-size:11px;padding:9px 12px;box-sizing:border-box">
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;font-weight:500">Spreadsheet ID <span style="color:#64748b;font-weight:400">(URL del Sheet, entre /d/ y /edit)</span></div>
+          <input type="text" id="sp-sheet" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-family:monospace;font-size:11px;padding:9px 12px;box-sizing:border-box">
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;font-weight:500">Drive Folder ID <span style="color:#64748b;font-weight:400">(URL de la carpeta, al final)</span></div>
+          <input type="text" id="sp-drive" placeholder="1dyUEebJaFnWa3Z6n8bCkef0Okz7SIoWm" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-family:monospace;font-size:11px;padding:9px 12px;box-sizing:border-box">
+        </div>
+        <div id="sp-status" style="font-size:12px;margin-bottom:16px;line-height:2"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button onclick="document.getElementById('setup-panel').style.display='none'" style="background:#1a1d27;border:1px solid #2e3347;color:#94a3b8;padding:9px 16px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
+          <button onclick="saveSetupPanel()" style="background:#f97316;border:none;color:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500">💾 Guardar</button>
+        </div>
+      </div>
+    </div>
     </div>
   </div>
 </div>
@@ -949,6 +978,35 @@ async function saveSplitInvoice(){
 document.getElementById('split-modal').addEventListener('click',e=>{if(e.target===document.getElementById('split-modal'))closeSplitModal();});
 
 
+
+function openSetupPanel(){
+  const p=document.getElementById('setup-panel');
+  p.style.display='flex';
+  document.getElementById('sp-client').value=localStorage.getItem('fc_client_id')||'';
+  document.getElementById('sp-sheet').value=localStorage.getItem('fc_sheet_id')||'';
+  document.getElementById('sp-drive').value=localStorage.getItem('fc_drive_id')||'';
+  updateSpStatus();
+}
+function updateSpStatus(){
+  const c=localStorage.getItem('fc_client_id');
+  const s=localStorage.getItem('fc_sheet_id');
+  const d=localStorage.getItem('fc_drive_id');
+  const ok=v=>v?`<span style="color:#22c55e">✅ Configurado</span>`:`<span style="color:#ef4444">❌ Falta</span>`;
+  document.getElementById('sp-status').innerHTML=`Client ID: ${ok(c)} &nbsp; Sheet ID: ${ok(s)} &nbsp; Drive ID: ${ok(d)}`;
+}
+function saveSetupPanel(){
+  const c=document.getElementById('sp-client').value.trim();
+  const s=document.getElementById('sp-sheet').value.trim();
+  const d=document.getElementById('sp-drive').value.trim();
+  if(!c||!s||!d){alert('Completa los tres campos para continuar.');return;}
+  localStorage.setItem('fc_client_id',c);
+  localStorage.setItem('fc_sheet_id',s);
+  localStorage.setItem('fc_drive_id',d);
+  document.getElementById('setup-panel').style.display='none';
+  const w=document.getElementById('login-warn');if(w)w.style.display='none';
+  const bl=document.getElementById('btn-login');if(bl){bl.disabled=false;bl.style.opacity='1';}
+  alert('✅ Credenciales guardadas. Ahora puedes iniciar sesión con Google.');
+}
 // ======== SETUP MODAL ========
 function openSetupModal(){
   document.getElementById('setup-modal').classList.add('open');
