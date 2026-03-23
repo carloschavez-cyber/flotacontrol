@@ -196,37 +196,33 @@ function configReady(){ return !!(CONFIG.CLIENT_ID&&CONFIG.SPREADSHEET_ID&&CONFI
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
       <button onclick="openSetupPanel()" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:12px;font-family:var(--font-body)">⚙️ Configurar credenciales de Google</button>
     <!-- SETUP INLINE PANEL -->
-    <div id="setup-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:none;align-items:center;justify-content:center;padding:20px">
+    <div id="setup-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;align-items:center;justify-content:center;padding:20px">
       <div style="background:#1a1d27;border:1px solid #2e3347;border-radius:16px;width:100%;max-width:520px;padding:28px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700">⚙️ Configuración de Google</div>
-          <button onclick="document.getElementById('setup-panel').style.display='none'" style="background:#22263a;border:none;color:#94a3b8;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">×</button>
+          <div style="font-size:17px;font-weight:700">Configuracion de Google</div>
+          <button id="sp-close-btn" style="background:#22263a;border:none;color:#94a3b8;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">x</button>
         </div>
-        <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px;font-size:12px;color:#3b82f6;margin-bottom:20px;line-height:1.8">
-          🔒 Se guardan <strong>solo en este navegador</strong>. El archivo HTML queda limpio para GitHub.
+        <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:12px;font-size:12px;color:#60a5fa;margin-bottom:18px;line-height:1.7">
+          Sus credenciales se guardan SOLO en este navegador. El archivo HTML queda limpio para GitHub.
         </div>
-        <div style="margin-bottom:14px">
-          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;font-weight:500">OAuth Client ID <span style="color:#64748b;font-weight:400">(termina en .apps.googleusercontent.com)</span></div>
-          <input type="text" id="sp-client" placeholder="123456789-abc.apps.googleusercontent.com" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-family:monospace;font-size:11px;padding:9px 12px;box-sizing:border-box">
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:5px">OAuth Client ID</div>
+          <input type="text" id="sp-client" placeholder="123456789-abc.apps.googleusercontent.com" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-size:11px;padding:9px 12px;box-sizing:border-box;font-family:monospace">
         </div>
-        <div style="margin-bottom:14px">
-          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;font-weight:500">Spreadsheet ID <span style="color:#64748b;font-weight:400">(URL del Sheet, entre /d/ y /edit)</span></div>
-          <input type="text" id="sp-sheet" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-family:monospace;font-size:11px;padding:9px 12px;box-sizing:border-box">
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:5px">Spreadsheet ID (URL del Sheet, entre /d/ y /edit)</div>
+          <input type="text" id="sp-sheet" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-size:11px;padding:9px 12px;box-sizing:border-box;font-family:monospace">
         </div>
-        <div style="margin-bottom:20px">
-          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;font-weight:500">Drive Folder ID <span style="color:#64748b;font-weight:400">(URL de la carpeta, al final)</span></div>
-          <input type="text" id="sp-drive" placeholder="1dyUEebJaFnWa3Z6n8bCkef0Okz7SIoWm" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-family:monospace;font-size:11px;padding:9px 12px;box-sizing:border-box">
+        <div style="margin-bottom:18px">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:5px">Drive Folder ID (URL de la carpeta, al final)</div>
+          <input type="text" id="sp-drive" placeholder="1dyUEebJaFnWa3Z6n8bCkef0Okz7SIoWm" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-size:11px;padding:9px 12px;box-sizing:border-box;font-family:monospace">
         </div>
-        <div id="sp-status" style="font-size:12px;margin-bottom:16px;line-height:2"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button onclick="document.getElementById('setup-panel').style.display='none'" style="background:#1a1d27;border:1px solid #2e3347;color:#94a3b8;padding:9px 16px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
-          <button onclick="saveSetupPanel()" style="background:#f97316;border:none;color:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500">💾 Guardar</button>
+          <button id="sp-cancel-btn" style="background:#1a1d27;border:1px solid #2e3347;color:#94a3b8;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px">Cancelar</button>
+          <button id="sp-save-btn" style="background:#f97316;border:none;color:#fff;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">Guardar</button>
         </div>
       </div>
     </div>
-    </div>
-  </div>
-</div>
 
 <!-- APP -->
 <div class="app" id="app" style="display:none">
@@ -771,37 +767,82 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target===docu
 function showManualForm(){document.getElementById('step-upload').style.display='none';document.getElementById('manual-link').style.display='none';document.getElementById('invoice-form').style.display='block';}
 
 async function handleFile(input){
-  const file=input.files[0];if(!file)return;
-  currentMime=file.type.startsWith('image/')?file.type:'image/jpeg';
-  new FileReader().onload=e=>{currentImageData=e.target.result;if(file.type.startsWith('image/')){const img=document.getElementById('img-preview');img.src=currentImageData;img.style.display='block';}};
-  const fr=new FileReader();fr.onload=e=>{currentImageData=e.target.result;if(file.type.startsWith('image/')){document.getElementById('img-preview').src=currentImageData;document.getElementById('img-preview').style.display='block';}};fr.readAsDataURL(file);
-  document.getElementById('manual-link').style.display='none';
-  document.getElementById('ai-state').style.display='block';
-  document.getElementById('ai-state').innerHTML=`<div class="processing-state"><div class="spinner"></div><div class="processing-text">🤖 La IA está analizando tu factura...</div></div>`;
-  try{
-    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
-    const apiKey=getApiKey();
-    if(!apiKey){
-      document.getElementById('ai-state').style.display='none';
-      document.getElementById('ai-result').style.display='block';
-      document.getElementById('ai-result').innerHTML=`<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:12px;font-size:13px;color:var(--amber)">⚠️ API key no configurada — ingresa los datos manualmente o <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent2)">consíguela aquí →</a></div>`;
-      document.getElementById('invoice-form').style.display='block';
-      return;
+  const file=input.files[0]; if(!file) return;
+  currentMime = file.type.startsWith('image/') ? file.type : 'image/jpeg';
+  const fr = new FileReader();
+  fr.onload = function(e){
+    currentImageData = e.target.result;
+    if(file.type.startsWith('image/')){
+      document.getElementById('img-preview').src = currentImageData;
+      document.getElementById('img-preview').style.display = 'block';
     }
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:currentMime,data:b64}},{type:'text',text:'Extrae los datos de esta factura. Responde SOLO con JSON valido sin markdown ni backticks. Campos: {\"numero\":\"\",\"fecha\":\"YYYY-MM-DD\",\"proveedor\":\"\",\"rtn\":\"\",\"subtotal\":0,\"isv\":0,\"total\":0,\"notas\":\"descripcion breve\"}'}]}]})};
-    const data=await resp.json();const text=data.content?.map(c=>c.text||'').join('')||'';
-    let ex={};try{ex=JSON.parse(text.replace(/```json|```/g,'').trim());}catch{}
-    ['numero','fecha','proveedor','rtn','subtotal','isv','total','notas'].forEach(k=>{if(ex[k])document.getElementById('f-'+k).value=ex[k];});
-    const found=['numero','fecha','proveedor','subtotal','total'].filter(k=>ex[k]).length;
-    document.getElementById('ai-state').style.display='none';
-    document.getElementById('ai-result').style.display='block';
-    document.getElementById('ai-result').innerHTML=`<div class="ai-preview"><div class="ai-badge">✨ IA — ${found} campos extraídos</div><div class="ai-fields">${ex.proveedor?`<div class="ai-field"><div class="ai-field-label">Proveedor</div><div class="ai-field-value">${ex.proveedor}</div></div>`:''}${ex.total?`<div class="ai-field"><div class="ai-field-label">Total</div><div class="ai-field-value">L ${Number(ex.total).toLocaleString()}</div></div>`:''}${ex.fecha?`<div class="ai-field"><div class="ai-field-label">Fecha</div><div class="ai-field-value">${ex.fecha}</div></div>`:''}${ex.rtn?`<div class="ai-field"><div class="ai-field-label">RTN</div><div class="ai-field-value">${ex.rtn}</div></div>`:''}</div><div style="font-size:11px;color:var(--muted);margin-top:10px">Revisa y corrige si es necesario</div></div>`;
-    document.getElementById('invoice-form').style.display='block';
-  }catch{
-    document.getElementById('ai-state').style.display='none';
-    document.getElementById('ai-result').style.display='block';
-    document.getElementById('ai-result').innerHTML=`<div style="color:var(--red);font-size:13px;padding:10px">⚠️ No se pudo analizar la imagen. Ingresa los datos manualmente.</div>`;
-    document.getElementById('invoice-form').style.display='block';
+  };
+  fr.readAsDataURL(file);
+
+  document.getElementById('manual-link').style.display = 'none';
+  const apiKey = getApiKey();
+  if(!apiKey){
+    document.getElementById('ai-state').style.display = 'none';
+    document.getElementById('ai-result').style.display = 'block';
+    document.getElementById('ai-result').innerHTML = '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:12px;font-size:13px;color:var(--amber)">Sin API key configurada. <button onclick="openApiKeyModal()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:600;font-family:var(--font-body);font-size:13px">Configurar ahora</button></div>';
+    document.getElementById('invoice-form').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('ai-state').style.display = 'block';
+  document.getElementById('ai-state').innerHTML = '<div class="processing-state"><div class="spinner"></div><div class="processing-text">Analizando tu factura...</div></div>';
+
+  try {
+    const b64 = await new Promise(function(res, rej){
+      const r = new FileReader();
+      r.onload = function(){ res(r.result.split(',')[1]); };
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const promptText = 'Extrae los datos de esta factura. Responde SOLO con JSON valido sin markdown. Formato: {"numero":"","fecha":"YYYY-MM-DD","proveedor":"","rtn":"","subtotal":0,"isv":0,"total":0,"notas":"descripcion breve"}';
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: currentMime, data: b64 } },
+            { type: 'text', text: promptText }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = data.content ? data.content.map(function(c){ return c.text||''; }).join('') : '';
+    let ex = {};
+    try { ex = JSON.parse(text.replace(/```json|```/g,'').trim()); } catch(e){}
+
+    ['numero','fecha','proveedor','rtn','subtotal','isv','total','notas'].forEach(function(k){
+      if(ex[k]) document.getElementById('f-'+k).value = ex[k];
+    });
+
+    const found = ['numero','fecha','proveedor','subtotal','total'].filter(function(k){ return ex[k]; }).length;
+    document.getElementById('ai-state').style.display = 'none';
+    document.getElementById('ai-result').style.display = 'block';
+    document.getElementById('ai-result').innerHTML = '<div class="ai-preview"><div class="ai-badge">IA — '+found+' campos extraidos</div></div>';
+    document.getElementById('invoice-form').style.display = 'block';
+
+  } catch(err) {
+    document.getElementById('ai-state').style.display = 'none';
+    document.getElementById('ai-result').style.display = 'block';
+    document.getElementById('ai-result').innerHTML = '<div style="color:var(--red);font-size:13px;padding:10px">No se pudo analizar la imagen. Ingresa los datos manualmente.</div>';
+    document.getElementById('invoice-form').style.display = 'block';
   }
 }
 
@@ -889,6 +930,157 @@ document.getElementById('apikey-modal').addEventListener('click',e=>{if(e.target
 
 // ======== DIVIDIR FACTURA ========
 let splitData = null;
+
+function openSplitModal(facturaId){
+  const f = facturaId ? facturas.find(x=>x.id===facturaId) : null;
+  splitData = f ? {...f} : null;
+  document.getElementById('split-modal').classList.add('open');
+  document.getElementById('sp-numero').value    = f?.numero||'';
+  document.getElementById('sp-fecha').value     = f?.fecha||new Date().toISOString().split('T')[0];
+  document.getElementById('sp-proveedor').value = f?.proveedor||'';
+  document.getElementById('sp-rtn').value       = f?.rtn||'';
+  document.getElementById('sp-pago').value      = f?.pago||'efectivo';
+  document.getElementById('sp-categoria').value = f?.categoria||'diesel';
+  document.getElementById('sp-total').value     = f?.total||'';
+  document.getElementById('sp-rows').innerHTML  = '';
+  addSplitRow(); addSplitRow();
+  calcSplitRemainder();
+}
+
+function closeSplitModal(){document.getElementById('split-modal').classList.remove('open');}
+
+function addSplitRow(){
+  const div=document.createElement('div');
+  div.style.cssText='display:flex;gap:10px;align-items:center;margin-bottom:10px';
+  div.innerHTML=`
+    <select style="flex:1.5;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px">
+      <option value="">— Sin asignar —</option>
+      ${unidades.map(u=>`<option value="${u.placa}">${u.placa} — ${u.conductor}</option>`).join('')}
+    </select>
+    <input type="number" placeholder="Monto L" min="0" step="0.01"
+      style="width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px"
+      oninput="calcSplitRemainder()">
+    <input type="text" placeholder="Notas opcionales"
+      style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px">
+    <button onclick="this.parentElement.remove();calcSplitRemainder()"
+      style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--red);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;flex-shrink:0">✕</button>`;
+  document.getElementById('sp-rows').appendChild(div);
+}
+
+function calcSplitRemainder(){
+  const total=parseFloat(document.getElementById('sp-total').value)||0;
+  let suma=0;
+  for(const row of document.getElementById('sp-rows').children){
+    suma+=parseFloat(row.querySelectorAll('input')[0]?.value)||0;
+  }
+  const resto=total-suma;
+  const el=document.getElementById('sp-remainder');
+  el.textContent=`Total: L ${total.toLocaleString('es-HN',{minimumFractionDigits:2})}  ·  Asignado: L ${suma.toLocaleString('es-HN',{minimumFractionDigits:2})}  ·  Restante: L ${Math.abs(resto).toLocaleString('es-HN',{minimumFractionDigits:2})} ${resto<-0.01?'(excedido)':resto>0.01?'(sin asignar)':'✅'}`;
+  el.style.color=Math.abs(resto)<0.01?'var(--green)':resto<0?'var(--red)':'var(--amber)';
+}
+
+async function saveSplitInvoice(){
+  const total=parseFloat(document.getElementById('sp-total').value)||0;
+  const proveedor=document.getElementById('sp-proveedor').value;
+  if(!proveedor||!total){alert('Completa el proveedor y el total.');return;}
+  const partes=[];
+  for(const row of document.getElementById('sp-rows').children){
+    const placa=row.querySelectorAll('select')[0]?.value||'';
+    const monto=parseFloat(row.querySelectorAll('input')[0]?.value)||0;
+    const nota=row.querySelectorAll('input')[1]?.value||'';
+    if(monto>0) partes.push({placa,monto,nota});
+  }
+  if(partes.length===0){alert('Agrega al menos una unidad con monto.');return;}
+  const suma=partes.reduce((s,p)=>s+p.monto,0);
+  if(Math.abs(suma-total)>1){if(!confirm(`La suma (L ${suma.toLocaleString()}) difiere del total (L ${total.toLocaleString()}). ¿Continuar?`))return;}
+  const btn=document.getElementById('btn-split-save');btn.disabled=true;btn.textContent='⏳ Guardando...';
+  const base={
+    numero:document.getElementById('sp-numero').value||`SPLIT-${Date.now()}`,
+    fecha:document.getElementById('sp-fecha').value||new Date().toISOString().split('T')[0],
+    proveedor, rtn:document.getElementById('sp-rtn').value,
+    pago:document.getElementById('sp-pago').value,
+    categoria:document.getElementById('sp-categoria').value,
+    imagen_local:splitData?.imagen_local||null,
+    imagen_url:splitData?.imagen_url||'',
+    drive_id:'', drive_folder:'', vencimiento:'', estado:'pagado'
+  };
+  for(let i=0;i<partes.length;i++){
+    const p=partes[i];
+    const sub=parseFloat((p.monto/1.15).toFixed(2));
+    const f={id:facturas.length+1,...base,subtotal:sub,isv:parseFloat((p.monto-sub).toFixed(2)),total:p.monto,unidad:p.placa,notas:p.nota||(partes.length>1?`Parte ${i+1}/${partes.length}`:'')};
+    if(gToken) await appendToSheet(f);
+    facturas.push(f);
+  }
+  toast(`✅ Factura dividida en ${partes.length} entradas guardadas`,'success');
+  btn.disabled=false;btn.textContent='✅ Guardar todas las partes';
+  closeSplitModal();showPage('facturas');
+}
+
+document.getElementById('split-modal').addEventListener('click',e=>{if(e.target===document.getElementById('split-modal'))closeSplitModal();});
+
+
+
+
+// Setup panel event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  var panel = document.getElementById('setup-panel');
+  
+  document.getElementById('sp-close-btn').addEventListener('click', function(){ panel.style.display='none'; });
+  document.getElementById('sp-cancel-btn').addEventListener('click', function(){ panel.style.display='none'; });
+  document.getElementById('sp-save-btn').addEventListener('click', function(){
+    var c = document.getElementById('sp-client').value.trim();
+    var s = document.getElementById('sp-sheet').value.trim();
+    var d = document.getElementById('sp-drive').value.trim();
+    if(!c || !s || !d){ alert('Completa los tres campos para continuar.'); return; }
+    localStorage.setItem('fc_client_id', c);
+    localStorage.setItem('fc_sheet_id', s);
+    localStorage.setItem('fc_drive_id', d);
+    panel.style.display = 'none';
+    var w = document.getElementById('login-warn'); if(w) w.style.display='none';
+    var bl = document.getElementById('btn-login'); if(bl){ bl.disabled=false; bl.style.opacity='1'; }
+    alert('Credenciales guardadas. Ahora puedes iniciar sesion con Google.');
+  });
+});
+
+function openSetupPanel(){
+  var panel = document.getElementById('setup-panel');
+  panel.style.display = 'flex';
+  document.getElementById('sp-client').value = localStorage.getItem('fc_client_id')||'';
+  document.getElementById('sp-sheet').value  = localStorage.getItem('fc_sheet_id')||'';
+  document.getElementById('sp-drive').value  = localStorage.getItem('fc_drive_id')||'';
+}
+
+
+
+// ======== API KEY MODAL ========
+function openApiKeyModal(){
+  document.getElementById('apikey-modal').classList.add('open');
+  renderApiKeyStatus();
+  document.getElementById('apikey-input').value='';
+  document.getElementById('btn-save-apikey').disabled=true;
+}
+function closeApiKeyModal(){document.getElementById('apikey-modal').classList.remove('open');}
+function validateApiKeyInput(v){
+  const valid=v.startsWith('sk-ant-')&&v.length>20;
+  document.getElementById('btn-save-apikey').disabled=!valid;
+  document.getElementById('apikey-hint').style.color=v.length>0?(valid?'var(--green)':'var(--red)'):'var(--muted)';
+  document.getElementById('apikey-hint').textContent=v.length>0?(valid?'✅ Formato correcto':'❌ Debe empezar con sk-ant- y tener más de 20 caracteres'):'Debe empezar con sk-ant-';
+}
+function renderApiKeyStatus(){
+  const el=document.getElementById('apikey-current');
+  if(getApiKey()){el.style.display='flex';}else{el.style.display='none';}
+}
+function saveApiKeyFromModal(){
+  const v=document.getElementById('apikey-input').value.trim();
+  if(!v.startsWith('sk-ant-')||v.length<20){alert('API key inválida.');return;}
+  saveApiKey(v);
+  toast('✅ API Key guardada en este navegador','success');
+  closeApiKeyModal();
+}
+document.getElementById('apikey-modal').addEventListener('click',e=>{if(e.target===document.getElementById('apikey-modal'))closeApiKeyModal();});
+
+// ======== DIVIDIR FACTURA ========
+
 
 function openSplitModal(facturaId){
   const f = facturaId ? facturas.find(x=>x.id===facturaId) : null;
