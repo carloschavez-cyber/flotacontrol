@@ -200,7 +200,7 @@ function configReady(){ return !!(CONFIG.CLIENT_ID&&CONFIG.SPREADSHEET_ID&&CONFI
       <div style="background:#1a1d27;border:1px solid #2e3347;border-radius:16px;width:100%;max-width:520px;padding:28px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
           <div style="font-size:17px;font-weight:700">Configuracion de Google</div>
-          <button id="sp-close-btn" style="background:#22263a;border:none;color:#94a3b8;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">x</button>
+          <button id="sp-close-btn" onclick="document.getElementById('setup-panel').style.display='none'" style="background:#22263a;border:none;color:#94a3b8;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">x</button>
         </div>
         <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:12px;font-size:12px;color:#60a5fa;margin-bottom:18px;line-height:1.7">
           Sus credenciales se guardan SOLO en este navegador. El archivo HTML queda limpio para GitHub.
@@ -218,8 +218,8 @@ function configReady(){ return !!(CONFIG.CLIENT_ID&&CONFIG.SPREADSHEET_ID&&CONFI
           <input type="text" id="sp-drive" placeholder="1dyUEebJaFnWa3Z6n8bCkef0Okz7SIoWm" style="width:100%;background:#22263a;border:1px solid #2e3347;border-radius:8px;color:#f1f5f9;font-size:11px;padding:9px 12px;box-sizing:border-box;font-family:monospace">
         </div>
         <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button id="sp-cancel-btn" style="background:#1a1d27;border:1px solid #2e3347;color:#94a3b8;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px">Cancelar</button>
-          <button id="sp-save-btn" style="background:#f97316;border:none;color:#fff;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">Guardar</button>
+          <button id="sp-cancel-btn" onclick="document.getElementById('setup-panel').style.display='none'" style="background:#1a1d27;border:1px solid #2e3347;color:#94a3b8;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px">Cancelar</button>
+          <button id="sp-save-btn" onclick="saveSetupPanel()" style="background:#f97316;border:none;color:#fff;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">Guardar</button>
         </div>
       </div>
     </div>
@@ -1022,25 +1022,20 @@ document.getElementById('split-modal').addEventListener('click',e=>{if(e.target=
 
 
 // Setup panel event listeners
-document.addEventListener('DOMContentLoaded', function() {
-  var panel = document.getElementById('setup-panel');
-  
-  document.getElementById('sp-close-btn').addEventListener('click', function(){ panel.style.display='none'; });
-  document.getElementById('sp-cancel-btn').addEventListener('click', function(){ panel.style.display='none'; });
-  document.getElementById('sp-save-btn').addEventListener('click', function(){
-    var c = document.getElementById('sp-client').value.trim();
-    var s = document.getElementById('sp-sheet').value.trim();
-    var d = document.getElementById('sp-drive').value.trim();
-    if(!c || !s || !d){ alert('Completa los tres campos para continuar.'); return; }
-    localStorage.setItem('fc_client_id', c);
-    localStorage.setItem('fc_sheet_id', s);
-    localStorage.setItem('fc_drive_id', d);
-    panel.style.display = 'none';
-    var w = document.getElementById('login-warn'); if(w) w.style.display='none';
-    var bl = document.getElementById('btn-login'); if(bl){ bl.disabled=false; bl.style.opacity='1'; }
-    alert('Credenciales guardadas. Ahora puedes iniciar sesion con Google.');
-  });
-});
+function saveSetupPanel(){
+  var c = document.getElementById('sp-client').value.trim();
+  var s = document.getElementById('sp-sheet').value.trim();
+  var d = document.getElementById('sp-drive').value.trim();
+  if(!c || !s || !d){ alert('Completa los tres campos para continuar.'); return; }
+  localStorage.setItem('fc_client_id', c);
+  localStorage.setItem('fc_sheet_id', s);
+  localStorage.setItem('fc_drive_id', d);
+  document.getElementById('setup-panel').style.display = 'none';
+  var w = document.getElementById('login-warn'); if(w) w.style.display='none';
+  var bl = document.getElementById('btn-login'); if(bl){ bl.disabled=false; bl.style.opacity='1'; }
+  alert('Credenciales guardadas correctamente. Ahora puedes iniciar sesion con Google.');
+}
+
 
 function openSetupPanel(){
   var panel = document.getElementById('setup-panel');
@@ -1158,19 +1153,6 @@ function updateSpStatus(){
   const d=localStorage.getItem('fc_drive_id');
   const ok=v=>v?`<span style="color:#22c55e">✅ Configurado</span>`:`<span style="color:#ef4444">❌ Falta</span>`;
   document.getElementById('sp-status').innerHTML=`Client ID: ${ok(c)} &nbsp; Sheet ID: ${ok(s)} &nbsp; Drive ID: ${ok(d)}`;
-}
-function saveSetupPanel(){
-  const c=document.getElementById('sp-client').value.trim();
-  const s=document.getElementById('sp-sheet').value.trim();
-  const d=document.getElementById('sp-drive').value.trim();
-  if(!c||!s||!d){alert('Completa los tres campos para continuar.');return;}
-  localStorage.setItem('fc_client_id',c);
-  localStorage.setItem('fc_sheet_id',s);
-  localStorage.setItem('fc_drive_id',d);
-  document.getElementById('setup-panel').style.display='none';
-  const w=document.getElementById('login-warn');if(w)w.style.display='none';
-  const bl=document.getElementById('btn-login');if(bl){bl.disabled=false;bl.style.opacity='1';}
-  alert('✅ Credenciales guardadas. Ahora puedes iniciar sesión con Google.');
 }
 // ======== SETUP MODAL ========
 function openSetupModal(){
