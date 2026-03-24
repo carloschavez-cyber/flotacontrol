@@ -1053,12 +1053,7 @@ function openSetupPanel(){
 
 
 // ======== API KEY MODAL ========
-function openApiKeyModal(){
-  document.getElementById('apikey-modal').classList.add('open');
-  renderApiKeyStatus();
-  document.getElementById('apikey-input').value='';
-  document.getElementById('btn-save-apikey').disabled=true;
-}
+
 function closeApiKeyModal(){document.getElementById('apikey-modal').classList.remove('open');}
 function validateApiKeyInput(v){
   const valid=v.startsWith('sk-ant-')&&v.length>20;
@@ -1082,21 +1077,6 @@ document.getElementById('apikey-modal').addEventListener('click',e=>{if(e.target
 // ======== DIVIDIR FACTURA ========
 
 
-function openSplitModal(facturaId){
-  const f = facturaId ? facturas.find(x=>x.id===facturaId) : null;
-  splitData = f ? {...f} : null;
-  document.getElementById('split-modal').classList.add('open');
-  document.getElementById('sp-numero').value    = f?.numero||'';
-  document.getElementById('sp-fecha').value     = f?.fecha||new Date().toISOString().split('T')[0];
-  document.getElementById('sp-proveedor').value = f?.proveedor||'';
-  document.getElementById('sp-rtn').value       = f?.rtn||'';
-  document.getElementById('sp-pago').value      = f?.pago||'efectivo';
-  document.getElementById('sp-categoria').value = f?.categoria||'diesel';
-  document.getElementById('sp-total').value     = f?.total||'';
-  document.getElementById('sp-rows').innerHTML  = '';
-  addSplitRow(); addSplitRow();
-  calcSplitRemainder();
-}
 
 function closeSplitModal(){document.getElementById('split-modal').classList.remove('open');}
 
@@ -1171,14 +1151,7 @@ document.getElementById('split-modal').addEventListener('click',e=>{if(e.target=
 
 
 
-function openSetupPanel(){
-  const p=document.getElementById('setup-panel');
-  p.style.display='flex';
-  document.getElementById('sp-client').value=localStorage.getItem('fc_client_id')||'';
-  document.getElementById('sp-sheet').value=localStorage.getItem('fc_sheet_id')||'';
-  document.getElementById('sp-drive').value=localStorage.getItem('fc_drive_id')||'';
-  updateSpStatus();
-}
+
 function updateSpStatus(){
   const c=localStorage.getItem('fc_client_id');
   const s=localStorage.getItem('fc_sheet_id');
