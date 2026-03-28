@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlotaControl</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;--accent:#f97316;--accent2:#3b82f6;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--text:#f1f5f9;--muted:#64748b;--muted2:#94a3b8;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;min-height:100vh}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.logo-text{font-family:var(--font-head);font-size:18px;font-weight:800;color:var(--accent);letter-spacing:-.5px}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:2px}
+nav{padding:16px 12px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;color:var(--muted2);font-size:13px;font-weight:400;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(249,115,22,.12);color:var(--accent);font-weight:500}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;border-radius:999px;padding:1px 6px;font-weight:600}
+.header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);flex-shrink:0}
+.page-title{font-family:var(--font-head);font-size:22px;font-weight:700}
+.header-actions{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#ea6d10}
+.btn-ghost{background:var(--surface);color:var(--muted2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-google{background:#fff;color:#3c4043;border:1px solid #dadce0;font-weight:500}.btn-google:hover{background:#f8f9fa}
+.btn-sm{padding:6px 12px;font-size:12px}
+.content{padding:24px 28px;flex:1}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+.kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.kpi-value{font-family:var(--font-head);font-size:26px;font-weight:700;line-height:1}
+.kpi-sub{font-size:12px;color:var(--muted2);margin-top:6px}
+.kpi-warn{color:var(--amber)}.kpi-down{color:var(--red)}.kpi-up{color:var(--green)}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.chart-title{font-family:var(--font-head);font-size:14px;font-weight:600;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:110px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bar{width:100%;border-radius:4px 4px 0 0;cursor:pointer;transition:opacity .15s}.bar:hover{opacity:.8}
+.bar-label{font-size:10px;color:var(--muted);text-align:center}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:8px;flex:1}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-val{margin-left:auto;font-weight:500;color:var(--muted2)}
+.section-title{font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:16px}
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 16px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);text-align:left;font-weight:500;background:var(--surface2)}
+td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.placa-badge{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:.05em}
+.status-badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:500}
+.status-paid{background:rgba(34,197,94,.12);color:var(--green)}
+.status-pending{background:rgba(245,158,11,.12);color:var(--amber)}
+.status-overdue{background:rgba(239,68,68,.12);color:var(--red)}
+.unit-bar-wrap{display:flex;align-items:center;gap:10px}
+.unit-bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:999px;overflow:hidden}
+.unit-bar-fill{height:100%;border-radius:999px}
+.alerts-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.alert-item{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}
+.alert-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.alert-icon.warn{background:rgba(245,158,11,.15)}.alert-icon.danger{background:rgba(239,68,68,.15)}
+.alert-text{flex:1}.alert-title{font-size:13px;font-weight:500}
+.alert-desc{font-size:12px;color:var(--muted2);margin-top:2px}
+.alert-time{font-size:11px;color:var(--muted)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto}
+.modal-header{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-family:var(--font-head);font-size:18px;font-weight:700}
+.modal-close{background:var(--surface2);border:none;color:var(--muted2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:24px}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);position:relative}
+.upload-zone:hover{border-color:var(--accent);background:rgba(249,115,22,.05)}
+.upload-icon{font-size:36px;margin-bottom:12px}
+.upload-text{font-size:14px;color:var(--muted2)}
+.upload-text strong{color:var(--accent)}
+.upload-hint{font-size:12px;color:var(--muted);margin-top:6px}
+#file-input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;color:var(--muted2);font-weight:500}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px;width:100%;transition:border .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:70px}
+.ai-preview{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);border-radius:var(--radius-sm);padding:14px 16px;margin-top:16px}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--accent2);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.ai-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ai-field-label{color:var(--muted);font-size:12px}
+.ai-field-value{color:var(--text);font-weight:500;font-size:12px;margin-top:2px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-state{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px}
+.processing-text{font-size:13px;color:var(--muted2)}
+.img-preview{width:100%;max-height:200px;object-fit:contain;border-radius:var(--radius-sm);margin-top:12px;border:1px solid var(--border)}
+/* MONTH FILTER */
+.month-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.month-chip{padding:5px 12px;border-radius:999px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted2);transition:all .15s;font-family:var(--font-body)}
+.month-chip:hover{border-color:var(--accent);color:var(--accent)}
+.month-chip.active{background:rgba(249,115,22,.15);border-color:var(--accent);color:var(--accent);font-weight:500}
+.filter-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+/* IMAGE VIEWER */
+.viewer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .2s}
+.viewer-overlay.open{opacity:1;pointer-events:all}
+.viewer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.viewer-title{font-family:var(--font-head);font-size:15px;font-weight:600}
+.viewer-actions{display:flex;gap:10px}
+.viewer-body{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden}
+.viewer-img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.viewer-no-img{text-align:center;color:var(--muted)}
+.viewer-no-img div{font-size:48px;margin-bottom:12px}
+/* SYNC BANNER */
+.sync-banner{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:var(--radius-sm);margin-bottom:20px;font-size:13px}
+.sync-ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+.sync-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.sync-info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--accent2)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* THUMBNAILS */
+.img-thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:opacity .15s}
+.img-thumb:hover{opacity:.8}
+.no-img{width:40px;height:40px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted)}
+/* CONFIG */
+.config-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.config-title{font-family:var(--font-head);font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.config-status{font-size:11px;border-radius:999px;padding:2px 10px;font-weight:500}
+.config-connected{background:rgba(34,197,94,.12);color:var(--green)}
+.config-disconnected{background:rgba(239,68,68,.12);color:var(--red)}
+/* FOLDER TREE */
+.folder-tree{background:var(--surface2);border-radius:var(--radius-sm);padding:16px;font-family:'Courier New',monospace;font-size:12px;color:var(--muted2);line-height:2}
+.folder-tree .folder{color:var(--accent2)}
+.folder-tree .file{color:var(--muted2)}
+.folder-tree .active-folder{color:var(--green);font-weight:700}
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;max-width:440px;width:100%;text-align:center}
+.login-logo{font-family:var(--font-head);font-size:32px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.login-sub{color:var(--muted2);font-size:14px;margin-bottom:36px}
+.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:12px}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.user-chip{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:6px 14px 6px 6px;font-size:13px}
+.user-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.user-avatar-ph{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px;font-size:13px;z-index:500;transform:translateY(100px);opacity:0;transition:all .3s;max-width:340px;display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(34,197,94,.4)}
+.toast.error{border-color:rgba(239,68,68,.4);color:var(--red)}
+.toast.info{border-color:rgba(59,130,246,.4);color:var(--accent2)}
+@media(max-width:768px){.sidebar{display:none}.kpi-grid{grid-template-columns:1fr 1fr}.charts-row{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.content{padding:16px}.header{padding:16px}}
+</style>
+</head>
+<body>
+<div id="screen-setup" style="position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;padding:32px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-family:var(--font-head);font-size:28px;font-weight:800;color:var(--accent)">FlotaControl</div>
+      <div style="font-size:13px;color:var(--muted2);margin-top:6px">Configuracion de Google</div>
+    </div>
+    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px;font-size:12px;color:#60a5fa;margin-bottom:20px;line-height:1.7">
+      Tus credenciales se guardan SOLO en este navegador. El HTML queda limpio para GitHub.
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:var(--muted2);margin-bottom:5px;font-weight:500">OAuth Client ID</div>
+      <input id="cfg-client" type="text" placeholder="123456789-abc.apps.googleusercontent.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;padding:9px 12px;box-sizing:border-box;font-family:monospace">
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:var(--muted2);margin-bottom:5px;font-weight:500">Google Spreadsheet ID</div>
+      <input id="cfg-sheet" type="text" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;padding:9px 12px;box-sizing:border-box;font-family:monospace">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;color:var(--muted2);margin-bottom:5px;font-weight:500">Google Drive Folder ID</div>
+      <input id="cfg-drive" type="text" placeholder="1dyUEebJaFnWa3Z6n8bCkef0Okz7SIoWm" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;padding:9px 12px;box-sizing:border-box;font-family:monospace">
+    </div>
+    <button id="cfg-save-btn" style="width:100%;background:var(--accent);border:none;color:#fff;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;font-family:var(--font-body)">Guardar y continuar</button>
+    <div id="cfg-msg" style="font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none">Completa los tres campos</div>
+  </div>
+</div>
+
+<div id="screen-login" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:998;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;padding:40px;text-align:center">
+    <div style="font-family:var(--font-head);font-size:30px;font-weight:800;color:var(--accent);margin-bottom:6px">FlotaControl</div>
+    <div style="font-size:13px;color:var(--muted2);margin-bottom:32px">Sistema de facturas para transporte</div>
+    <button id="btn-google-login" style="width:100%;background:#fff;border:1px solid #dadce0;color:#3c4043;padding:12px 20px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:10px;box-sizing:border-box">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.31z"/></svg>
+      Continuar con Google
+    </button>
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px">
+      <div style="flex:1;height:1px;background:var(--border)"></div>o sin sincronizacion<div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+    <button id="btn-offline" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted2);padding:11px;border-radius:8px;cursor:pointer;font-size:13px;font-family:var(--font-body)">Entrar sin Google Drive</button>
+    <button id="btn-edit-config" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:12px;font-family:var(--font-body);margin-top:16px;display:block;width:100%">Editar credenciales</button>
+    <div id="login-err" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px;font-size:12px;color:var(--red);margin-top:12px"></div>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-text">FlotaControl</div><div class="logo-sub">Gestion de Facturas</div></div>
+    <nav>
+      <button class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">&#128202;</span> Dashboard</button>
+      <button class="nav-item" onclick="showPage('facturas')"><span class="nav-icon">&#129534;</span> Facturas</button>
+      <button class="nav-item" onclick="showPage('unidades')"><span class="nav-icon">&#128665;</span> Unidades</button>
+      <button class="nav-item" onclick="showPage('alertas')"><span class="nav-icon">&#128276;</span> Alertas</button>
+      <button class="nav-item" onclick="showPage('reportes')"><span class="nav-icon">&#128193;</span> Reportes</button>
+      <button class="nav-item" onclick="showPage('config')"><span class="nav-icon">&#9729;</span> Google Drive</button>
+    </nav>
+    <div style="padding:16px;border-top:1px solid var(--border)">
+      <div class="user-chip">
+        <div class="user-avatar-ph" id="user-av">?</div>
+        <span id="user-name" style="flex:1;font-size:12px;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Sin sesion</span>
+        <button onclick="doSignOut()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px">&#8617;</button>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openSplitModal(null)">&#9986; Dividir</button>
+        <button class="btn btn-primary" onclick="openModal()">+ Nueva Factura</button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Nueva Factura</div><button class="modal-close" onclick="closeModal()">&#215;</button></div>
+    <div class="modal-body">
+      <div id="step-upload">
+        <div class="upload-zone"><input type="file" id="file-input" accept="image/*,application/pdf" onchange="handleFile(this)">
+          <div class="upload-icon">&#128247;</div>
+          <div class="upload-text"><strong>Foto o archivo de la factura</strong></div>
+          <div class="upload-hint">JPG PNG o PDF - La IA extrae los datos</div>
+        </div>
+        <img id="img-preview" class="img-preview" style="display:none">
+        <div id="ai-state" style="display:none"></div>
+        <div id="ai-result" style="display:none"></div>
+      </div>
+      <div id="invoice-form" style="display:none">
+        <div class="form-grid">
+          <div class="form-group"><label>N de factura</label><input type="text" id="f-numero" placeholder="0001-001-000123"></div>
+          <div class="form-group"><label>Fecha</label><input type="date" id="f-fecha"></div>
+          <div class="form-group"><label>Proveedor</label><input type="text" id="f-proveedor"></div>
+          <div class="form-group"><label>RTN</label><input type="text" id="f-rtn"></div>
+          <div class="form-group"><label>Subtotal (L)</label><input type="number" id="f-subtotal" oninput="calcTotal()"></div>
+          <div class="form-group"><label>ISV (L)</label><input type="number" id="f-isv" oninput="calcTotal()"></div>
+          <div class="form-group"><label>Total (L)</label><input type="number" id="f-total" style="background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.3)"></div>
+          <div class="form-group"><label>Forma de pago</label><select id="f-pago"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option><option value="cheque">Cheque</option><option value="credito">Credito</option></select></div>
+          <div class="form-group"><label>Tipo de gasto</label><select id="f-categoria"><option value="diesel">Diesel</option><option value="repuestos">Repuestos</option><option value="mantenimiento">Mantenimiento</option><option value="peajes">Peajes</option><option value="seguros">Seguros</option><option value="admin">Admin</option><option value="ingreso">Ingreso</option><option value="otro">Otro</option></select></div>
+          <div class="form-group"><label>Unidad</label><select id="f-unidad"><option value="">Sin asignar</option></select></div>
+          <div class="form-group"><label>Estado</label><select id="f-estado"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option><option value="vencido">Vencido</option></select></div>
+          <div class="form-group"><label>Vencimiento</label><input type="date" id="f-vencimiento"></div>
+          <div class="form-group full"><label>Notas</label><textarea id="f-notas"></textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="saveInvoice()" id="btn-save">Guardar Factura</button>
+        </div>
+      </div>
+      <div id="manual-link" style="text-align:center;margin-top:16px">
+        <button onclick="showManualForm()" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:13px;font-family:var(--font-body)">Ingresar datos manualmente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="split-modal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header"><div class="modal-title">Dividir Factura entre Unidades</div><button class="modal-close" onclick="closeSplitModal()">&#215;</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>N de factura</label><input type="text" id="sp-numero"></div>
+        <div class="form-group"><label>Fecha</label><input type="date" id="sp-fecha"></div>
+        <div class="form-group"><label>Proveedor</label><input type="text" id="sp-proveedor"></div>
+        <div class="form-group"><label>RTN</label><input type="text" id="sp-rtn"></div>
+        <div class="form-group"><label>Total factura (L)</label><input type="number" id="sp-total" oninput="calcSplitRemainder()"></div>
+        <div class="form-group"><label>Forma de pago</label><select id="sp-pago"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option><option value="cheque">Cheque</option><option value="credito">Credito</option></select></div>
+        <div class="form-group full"><label>Tipo de gasto</label><select id="sp-categoria"><option value="diesel">Diesel</option><option value="repuestos">Repuestos</option><option value="mantenimiento">Mantenimiento</option><option value="peajes">Peajes</option><option value="seguros">Seguros</option><option value="admin">Admin</option><option value="otro">Otro</option></select></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px">
+        <div style="font-weight:600">Distribucion por unidad</div>
+        <button onclick="addSplitRow()" class="btn btn-ghost btn-sm">+ Agregar</button>
+      </div>
+      <div id="sp-rows"></div>
+      <div id="sp-remainder" style="padding:10px;background:var(--surface2);border-radius:8px;font-size:13px;margin-top:10px;color:var(--amber)"></div>
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeSplitModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveSplitInvoice()">Guardar todas las partes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="viewer-overlay" id="viewer">
+  <div class="viewer-header">
+    <div class="viewer-title" id="viewer-title">Factura</div>
+    <div class="viewer-actions">
+      <a id="viewer-dl" class="btn btn-ghost btn-sm" download style="display:none">Descargar</a>
+      <a id="viewer-drive" class="btn btn-ghost btn-sm" target="_blank" style="display:none">Ver en Drive</a>
+      <button class="btn btn-ghost btn-sm" onclick="closeViewer()">Cerrar</button>
+    </div>
+  </div>
+  <div class="viewer-body" id="viewer-body"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCfg(k){ return localStorage.getItem(k)||''; }
+function getClientId(){ return getCfg('fc_client_id'); }
+function getSheetId(){ return getCfg('fc_sheet_id'); }
+function getDriveId(){ return getCfg('fc_drive_id'); }
+function getApiKey(){ return getCfg('fc_anthropic_key'); }
+function allConfigured(){ return !!(getClientId()&&getSheetId()&&getDriveId()); }
+
+var gToken=null,gUser=null,offlineMode=false,currentImageData=null,currentMime='image/jpeg',activeMonthFilter=null,splitData=null,driveCache={};
+var MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var MESES_CORTO=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+let facturas = [
+  {id:1,numero:'0001-001-000451',fecha:'2025-03-05',proveedor:'Energía del Norte SA',rtn:'0501-1990-00123',subtotal:12500,isv:1875,total:14375,pago:'transferencia',categoria:'diesel',unidad:'ABJ-1234',estado:'pagado',notas:'Ruta norte — 800 litros',vencimiento:'',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:2,numero:'0001-002-000892',fecha:'2025-03-08',proveedor:'Repuestos El Motor',rtn:'0801-2005-00987',subtotal:8200,isv:1230,total:9430,pago:'efectivo',categoria:'repuestos',unidad:'CDE-5678',estado:'pagado',notas:'Frenos traseros y pastillas',vencimiento:'',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:3,numero:'0001-003-000234',fecha:'2025-03-10',proveedor:'Taller García e Hijos',rtn:'0501-1998-00456',subtotal:6800,isv:1020,total:7820,pago:'credito',categoria:'mantenimiento',unidad:'FGH-9012',estado:'pendiente',notas:'Servicio mayor 50k km',vencimiento:'2025-03-25',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:4,numero:'0001-001-000460',fecha:'2025-03-12',proveedor:'Energía del Norte SA',rtn:'0501-1990-00123',subtotal:11000,isv:1650,total:12650,pago:'transferencia',categoria:'diesel',unidad:'IJK-3456',estado:'pagado',notas:'',vencimiento:'',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:5,numero:'0001-005-000078',fecha:'2025-03-14',proveedor:'Seguros Continental',rtn:'0101-1985-00777',subtotal:35000,isv:5250,total:40250,pago:'cheque',categoria:'seguros',unidad:'',estado:'pendiente',notas:'Renovación póliza flota',vencimiento:'2025-03-20',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:6,numero:'0001-002-000900',fecha:'2025-03-15',proveedor:'Repuestos El Motor',rtn:'0801-2005-00987',subtotal:3500,isv:525,total:4025,pago:'efectivo',categoria:'repuestos',unidad:'LMN-7890',estado:'pagado',notas:'Filtros de aceite x6',vencimiento:'',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:7,numero:'0001-001-000471',fecha:'2025-03-17',proveedor:'Energía del Norte SA',rtn:'0501-1990-00123',subtotal:9800,isv:1470,total:11270,pago:'transferencia',categoria:'diesel',unidad:'ABJ-1234',estado:'vencido',notas:'',vencimiento:'2025-03-15',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:8,numero:'0001-001-000402',fecha:'2025-02-10',proveedor:'Energía del Norte SA',rtn:'0501-1990-00123',subtotal:14000,isv:2100,total:16100,pago:'transferencia',categoria:'diesel',unidad:'CDE-5678',estado:'pagado',notas:'',vencimiento:'',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:9,numero:'0001-002-000811',fecha:'2025-02-18',proveedor:'Repuestos El Motor',rtn:'0801-2005-00987',subtotal:5500,isv:825,total:6325,pago:'efectivo',categoria:'repuestos',unidad:'FGH-9012',estado:'pagado',notas:'Amortiguadores traseros',vencimiento:'',imagen_local:null,imagen_url:'',drive_id:''},
+  {id:10,numero:'0001-001-000385',fecha:'2025-01-22',proveedor:'Energía del Norte SA',rtn:'0501-1990-00123',subtotal:13200,isv:1980,total:15180,pago:'transferencia',categoria:'diesel',unidad:'ABJ-1234',estado:'pagado',notas:'',vencimiento:'',imagen_local:null,imagen_url:'',drive_id:''},
+];
+
+const unidades = [
+  {placa:'ABJ-1234',tipo:'Camión 18t',conductor:'Carlos Ramos',km:142500},
+  {placa:'CDE-5678',tipo:'Camión 12t',conductor:'Jorge Matute',km:98200},
+  {placa:'FGH-9012',tipo:'Furgón',conductor:'Héctor Villanueva',km:203400},
+  {placa:'IJK-3456',tipo:'Camión 18t',conductor:'Mario Soto',km:77800},
+  {placa:'LMN-7890',tipo:'Camión 12t',conductor:'Roberto Paz',km:165900},
+];
+
+var catL={diesel:'Diesel',repuestos:'Repuestos',mantenimiento:'Mantenimiento',peajes:'Peajes',seguros:'Seguros',admin:'Admin',ingreso:'Ingreso',otro:'Otro'};
+function L(v){ return 'L '+Number(v).toLocaleString('es-HN',{minimumFractionDigits:2}); }
+function toast(msg,type){ var t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+(type||'success')+' show'; setTimeout(function(){ t.className='toast'; },4000); }
+
+function showSetupScreen(){
+  document.getElementById('screen-setup').style.display='flex';
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('cfg-client').value=getClientId();
+  document.getElementById('cfg-sheet').value=getSheetId();
+  document.getElementById('cfg-drive').value=getDriveId();
+}
+function saveSetup(){
+  var c=document.getElementById('cfg-client').value.trim();
+  var s=document.getElementById('cfg-sheet').value.trim();
+  var d=document.getElementById('cfg-drive').value.trim();
+  if(!c||!s||!d){ document.getElementById('cfg-msg').style.display='block'; return; }
+  document.getElementById('cfg-msg').style.display='none';
+  localStorage.setItem('fc_client_id',c);
+  localStorage.setItem('fc_sheet_id',s);
+  localStorage.setItem('fc_drive_id',d);
+  showLoginScreen();
+}
+function showLoginScreen(){
+  document.getElementById('screen-setup').style.display='none';
+  document.getElementById('screen-login').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+function startGoogleLogin(){
+  var cid=getClientId(); if(!cid){ alert('Configura tus credenciales primero.'); return; }
+  try {
+    var client=google.accounts.oauth2.initTokenClient({
+      client_id:cid,
+      scope:'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      callback:function(resp){
+        if(resp.error){ var el=document.getElementById('login-err'); el.textContent='Error: '+resp.error; el.style.display='block'; return; }
+        gToken=resp.access_token;
+        fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:'Bearer '+gToken}})
+          .then(function(r){ return r.json(); })
+          .then(function(u){
+            gUser=u;
+            var av=document.getElementById('user-av');
+            if(u.picture){ av.outerHTML='<img class="user-avatar" id="user-av" src="'+u.picture+'">'; }
+            else{ av.textContent=(u.name||'?')[0].toUpperCase(); }
+            document.getElementById('user-name').textContent=u.name||u.email||'Usuario';
+          }).catch(function(){}).then(function(){ enterApp(); });
+      }
+    });
+    client.requestAccessToken();
+  } catch(e){ var el=document.getElementById('login-err'); el.textContent='Error: '+e.message; el.style.display='block'; }
+}
+function enterOffline(){ offlineMode=true; gToken=null; gUser=null; document.getElementById('user-name').textContent='Sin Drive'; enterApp(); }
+function enterApp(){
+  document.getElementById('screen-setup').style.display='none';
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('app').style.display='flex';
+  var sel=document.getElementById('f-unidad');
+  sel.innerHTML='<option value="">Sin asignar</option>';
+  unidades.forEach(function(u){ sel.innerHTML+='<option value="'+u.placa+'">'+u.placa+' - '+u.conductor+'</option>'; });
+  showPage('dashboard');
+}
+function doSignOut(){
+  if(gToken){ try{ google.accounts.oauth2.revoke(gToken,function(){}); }catch(e){} }
+  gToken=null; gUser=null; offlineMode=false; showLoginScreen();
+}
+
+function appendToSheet(f){
+  if(!gToken||!getSheetId()) return Promise.resolve(false);
+  var year=new Date(f.fecha+'T12:00:00').getFullYear(), tabName='Facturas '+year;
+  return fetch('https://sheets.googleapis.com/v4/spreadsheets/'+getSheetId()+'?fields=sheets.properties.title',{headers:{Authorization:'Bearer '+gToken}})
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var exists=data.sheets&&data.sheets.some(function(s){ return s.properties.title===tabName; });
+      if(exists) return tabName;
+      return fetch('https://sheets.googleapis.com/v4/spreadsheets/'+getSheetId()+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:JSON.stringify({requests:[{addSheet:{properties:{title:tabName}}}]})})
+        .then(function(){ return fetch('https://sheets.googleapis.com/v4/spreadsheets/'+getSheetId()+'/values/'+encodeURIComponent(tabName)+'!A1:append?valueInputOption=USER_ENTERED',{method:'POST',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:JSON.stringify({values:[['ID','Fecha','Factura','Proveedor','RTN','Subtotal','ISV','Total','Categoria','Unidad','Estado','Pago','Vencimiento','Notas','URL Imagen']]})}); })
+        .then(function(){ return tabName; });
+    })
+    .then(function(tab){
+      return fetch('https://sheets.googleapis.com/v4/spreadsheets/'+getSheetId()+'/values/'+encodeURIComponent(tab)+'!A:O:append?valueInputOption=USER_ENTERED',{method:'POST',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:JSON.stringify({values:[[f.id,f.fecha,f.numero,f.proveedor,f.rtn,f.subtotal,f.isv,f.total,f.categoria,f.unidad,f.estado,f.pago,f.vencimiento||'',f.notas||'',f.imagen_url||'']]})}
+      ).then(function(r){ return r.ok; });
+    }).catch(function(){ return false; });
+}
+function getOrCreateFolder(name,parentId){
+  var q=encodeURIComponent("name='"+name+"' and '"+parentId+"' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false");
+  return fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id)',{headers:{Authorization:'Bearer '+gToken}})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.files&&d.files.length>0) return d.files[0].id;
+      return fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:JSON.stringify({name:name,mimeType:'application/vnd.google-apps.folder',parents:[parentId]})}).then(function(r){ return r.json(); }).then(function(d){ return d.id; });
+    });
+}
+function getFolderForDate(fecha){
+  if(!gToken||!getDriveId()) return Promise.resolve(getDriveId());
+  var d=new Date(fecha+'T12:00:00'),year=d.getFullYear(),month=d.getMonth()+1,key=year+'/'+month;
+  if(driveCache[key]) return Promise.resolve(driveCache[key]);
+  return getOrCreateFolder(String(year),getDriveId())
+    .then(function(yId){ return getOrCreateFolder(String(month).padStart(2,'0')+' - '+MESES[month-1],yId); })
+    .then(function(fId){ driveCache[key]=fId; return fId; });
+}
+function uploadToDrive(b64,fileName,mime,folderId){
+  if(!gToken) return Promise.resolve(null);
+  var boundary='fc-'+Date.now(), meta=JSON.stringify({name:fileName,parents:[folderId]});
+  var body='--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: '+mime+'\r\nContent-Transfer-Encoding: base64\r\n\r\n'+b64+'\r\n--'+boundary+'--';
+  return fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{method:'POST',headers:{Authorization:'Bearer '+gToken,'Content-Type':'multipart/related; boundary="'+boundary+'"'},body:body}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; });
+}
+
+function showPage(page) {
+  document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',['dashboard','facturas','unidades','alertas','reportes','config'][i]===page));
+  document.getElementById('page-title').textContent={dashboard:'Dashboard',facturas:'Facturas',unidades:'Unidades',alertas:'Alertas',reportes:'Reportes',config:'Google Drive / Sheets'}[page];
+  document.getElementById('content').innerHTML={dashboard:renderDashboard,facturas:()=>renderFacturas(null),unidades:renderUnidades,alertas:renderAlertas,reportes:renderReportes,config:renderConfig}[page]();
+  if(page==='config')setTimeout(renderApiKeyConfigStatus,50);
+}
+
+// ======== MONTH FILTER WIDGET ========
+function renderMonthFilter(lista) {
+  const mesesConDatos = [...new Set(lista.map(f=>f.fecha.substring(0,7)))].sort().reverse();
+  const chips = mesesConDatos.map(ym => {
+    const [y,m] = ym.split('-');
+    const label = MESES_CORTO[parseInt(m)-1]+' '+y;
+    const active = activeMonthFilter===ym?'active':'';
+    return `<button class="month-chip ${active}" onclick="setMonthFilter('${ym}')">${label}</button>`;
+  });
+  const activeLabel = activeMonthFilter
+    ? `<button class="month-chip" onclick="setMonthFilter(null)" style="color:var(--red);border-color:rgba(239,68,68,.3)">✕ Limpiar</button>` : '';
+  return `<div class="month-filter"><span class="filter-label">Mes:</span><button class="month-chip ${!activeMonthFilter?'active':''}" onclick="setMonthFilter(null)">Todos</button>${chips.join('')}${activeLabel}</div>`;
+}
+
+function setMonthFilter(ym) {
+  activeMonthFilter = ym;
+  showPage('facturas');
+}
+
+// ======== DASHBOARD ========
+function renderDashboard() {
+  const now = new Date();
+  const curYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mesActual = facturas.filter(f=>f.fecha.startsWith(curYM)&&f.categoria!=='ingreso');
+  const mesAnterior = (() => {
+    const d = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    return facturas.filter(f=>f.fecha.startsWith(ym)&&f.categoria!=='ingreso');
+  })();
+
+  const totalMes = mesActual.reduce((s,f)=>s+f.total,0);
+  const totalAnt = mesAnterior.reduce((s,f)=>s+f.total,0);
+  const pct = totalAnt>0?Math.round(((totalMes-totalAnt)/totalAnt)*100):0;
+  const totalP = facturas.filter(f=>f.estado==='pendiente'||f.estado==='vencido').reduce((s,f)=>s+f.total,0);
+
+  // Gastos por mes (últimos 6)
+  const meses6 = [];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);meses6.push({y:d.getFullYear(),m:d.getMonth()+1,label:MESES_CORTO[d.getMonth()]});}
+  const valsMes = meses6.map(({y,m})=>{const ym=`${y}-${String(m).padStart(2,'0')}`;return facturas.filter(f=>f.fecha.startsWith(ym)&&f.categoria!=='ingreso').reduce((s,f)=>s+f.total,0);});
+  const maxBar = Math.max(...valsMes,1);
+  const bars = meses6.map(({m,label},i)=>{
+    const h=Math.max(6,Math.round((valsMes[i]/maxBar)*80));
+    const cur = i===5;
+    const ym = `${meses6[i].y}-${String(m).padStart(2,'0')}`;
+    return `<div class="bar-col"><div style="font-size:10px;color:var(--muted2);height:16px">${cur&&valsMes[i]>0?'L '+Math.round(valsMes[i]/1000)+'k':''}</div><div class="bar" style="height:${h}px;background:${cur?'var(--accent)':'var(--surface2)'};border:1px solid ${cur?'var(--accent)':'var(--border)'}" onclick="activeMonthFilter='${ym}';showPage('facturas')" title="Ver ${label}"></div><div class="bar-label">${label}</div></div>`;
+  }).join('');
+
+  // Donut categorías mes actual
+  const catT={};mesActual.forEach(f=>catT[f.categoria]=(catT[f.categoria]||0)+f.total);
+  const catE=Object.entries(catT).sort((a,b)=>b[1]-a[1]);
+  const catC={diesel:'#f97316',repuestos:'#3b82f6',mantenimiento:'#22c55e',peajes:'#8b5cf6',seguros:'#f59e0b',admin:'#94a3b8'};
+  const donutT=Object.values(catT).reduce((s,v)=>s+v,0)||1;let off=0;const r=50,circ=2*Math.PI*r;
+  const donut=catE.map(([c,v])=>{const d=(v/donutT)*circ;const p=`<circle cx="60" cy="60" r="${r}" fill="none" stroke="${catC[c]||'#64748b'}" stroke-width="18" stroke-dasharray="${d} ${circ}" stroke-dashoffset="${-off}"/>`;off+=d;return p;}).join('');
+
+  // Units this month
+  const uT={};unidades.forEach(u=>uT[u.placa]=0);mesActual.forEach(f=>{if(f.unidad)uT[f.unidad]=(uT[f.unidad]||0)+f.total;});
+  const uE=Object.entries(uT).sort((a,b)=>b[1]-a[1]);const maxU=Math.max(...uE.map(e=>e[1]),1);
+
+  const mesNombre = MESES[now.getMonth()]+' '+now.getFullYear();
+  const syncBanner = gToken
+    ? `<div class="sync-banner sync-ok"><div class="sync-dot"></div>Conectado · Sheets organizado por año · Drive por año/mes</div>`
+    : offlineMode
+    ? `<div class="sync-banner sync-warn"><div class="sync-dot"></div>Sin Drive — datos solo en este navegador &nbsp;<button onclick="signOut()" style="background:none;border:none;color:var(--amber);cursor:pointer;font-weight:600;font-family:var(--font-body)">Conectar →</button></div>`
+    : '';
+
+  return `${syncBanner}
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">Gastos — ${mesNombre}</div><div class="kpi-value">${L(totalMes)}</div><div class="kpi-sub ${pct>0?'kpi-down':'kpi-up'}">${pct>0?'↑':'↓'} ${Math.abs(pct)}% vs mes anterior</div></div>
+    <div class="kpi"><div class="kpi-label">Por pagar / cobrar</div><div class="kpi-value kpi-warn">${L(totalP)}</div><div class="kpi-sub">${facturas.filter(f=>f.estado==='pendiente').length} pendientes · ${facturas.filter(f=>f.estado==='vencido').length} vencidas</div></div>
+    <div class="kpi"><div class="kpi-label">Facturas este mes</div><div class="kpi-value">${mesActual.length}</div><div class="kpi-sub">${facturas.length} en total este año</div></div>
+    <div class="kpi"><div class="kpi-label">Unidades activas</div><div class="kpi-value">${unidades.length}</div><div class="kpi-sub">Con gastos este mes</div></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Últimos 6 meses <span style="font-size:11px;color:var(--muted);font-weight:400;font-family:var(--font-body)">(clic en barra para filtrar)</span></div><div class="bar-chart">${bars}</div></div>
+    <div class="chart-card"><div class="chart-title">Gastos por categoría — ${mesNombre}</div>
+      <div class="donut-wrap"><svg width="110" height="110" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--surface2)" stroke-width="18"/>${donut}</svg>
+        <div class="donut-legend">${catE.map(([c,v])=>`<div class="legend-item"><div class="legend-dot" style="background:${catC[c]||'#64748b'}"></div><span>${catL[c]||c}</span><span class="legend-val">${L(v)}</span></div>`).join('')}</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-title">Gasto por unidad — ${mesNombre}</div>
+  <div class="table-card"><table><thead><tr><th>Placa</th><th>Conductor</th><th>Tipo</th><th>Total mes</th><th>Distribución</th></tr></thead><tbody>
+  ${uE.map(([p,t])=>{const u=unidades.find(u=>u.placa===p);const pct=Math.round((t/maxU)*100);return`<tr><td><span class="placa-badge">?? ${p}</span></td><td>${u?.conductor||'—'}</td><td style="color:var(--muted2)">${u?.tipo||'—'}</td><td style="font-weight:500">${L(t)}</td><td style="min-width:140px"><div class="unit-bar-wrap"><div class="unit-bar-bg"><div class="unit-bar-fill" style="width:${pct}%;background:var(--accent)"></div></div><span style="font-size:11px;color:var(--muted)">${pct}%</span></div></td></tr>`;}).join('')}
+  </tbody></table></div>`;
+}
+
+// ======== FACTURAS ========
+function renderFacturas(list) {
+  let base = list || facturas;
+  if (activeMonthFilter) base = base.filter(f=>f.fecha.startsWith(activeMonthFilter));
+
+  const rows = base.map(f=>{
+    const hasImg=f.imagen_local||f.imagen_url;
+    const thumb=hasImg
+      ?(f.imagen_local?`<img class="img-thumb" src="${f.imagen_local}" onclick="openViewer(${f.id})" title="Ver imagen">`:`<div class="no-img" onclick="openViewer(${f.id})" style="cursor:pointer;border-color:var(--accent2);color:var(--accent2)" title="En Drive">☁</div>`)
+      :`<div class="no-img" title="Sin imagen">??</div>`;
+    return`<tr><td>${thumb}</td><td style="font-size:12px;color:var(--muted2)">${f.numero}</td><td>${f.proveedor}</td><td>${f.fecha}</td><td>${catL[f.categoria]||f.categoria}</td><td>${f.unidad?`<span class="placa-badge" style="font-size:11px;padding:2px 8px">${f.unidad}</span>`:'<span style="color:var(--muted)">—</span>'}</td><td style="font-weight:500;text-align:right">${L(f.total)}</td><td><span class="status-badge status-${f.estado}">${f.estado==='pagado'?'✅ Pagado':f.estado==='pendiente'?'⏳ Pendiente':'❗ Vencido'}</span></td><td><button class="btn btn-ghost btn-sm" onclick="openViewer(${f.id})" ${!hasImg?'disabled style="opacity:.35"':''}>?? Ver</button></td></tr>`;
+  }).join('');
+
+  const totalFiltro = base.reduce((s,f)=>s+f.total,0);
+  const totalLabel = activeMonthFilter
+    ? `<span style="font-size:13px;color:var(--muted2);margin-left:auto">Total filtrado: <strong style="color:var(--text)">${L(totalFiltro)}</strong></span>` : '';
+
+  return `
+  ${renderMonthFilter(facturas)}
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+    <div class="tabs" style="flex:1;margin-bottom:0">
+      <button class="tab active" onclick="activeMonthFilter=activeMonthFilter;renderFacturasPage()">Todas (${base.length})</button>
+      <button class="tab" onclick="filterStatus('pendiente')">Pendientes (${base.filter(f=>f.estado==='pendiente').length})</button>
+      <button class="tab" onclick="filterStatus('pagado')">Pagadas (${base.filter(f=>f.estado==='pagado').length})</button>
+    </div>
+    ${totalLabel}
+  </div>
+  <div class="table-card"><table><thead><tr><th>Imagen</th><th>N° Factura</th><th>Proveedor</th><th>Fecha</th><th>Categoría</th><th>Unidad</th><th style="text-align:right">Total</th><th>Estado</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">No hay facturas para este filtro</td></tr>'}</tbody></table></div>`;
+}
+
+function renderFacturasPage(){document.getElementById('content').innerHTML=renderFacturas(null);}
+function filterStatus(estado){
+  let base=facturas;
+  if(activeMonthFilter)base=base.filter(f=>f.fecha.startsWith(activeMonthFilter));
+  document.getElementById('content').innerHTML=renderFacturas(base.filter(f=>f.estado===estado));
+}
+
+// ======== UNIDADES ========
+function renderUnidades(){
+  const uT={},uC={};unidades.forEach(u=>{uT[u.placa]=0;uC[u.placa]={};});
+  facturas.forEach(f=>{if(f.unidad&&f.categoria!=='ingreso'){uT[f.unidad]=(uT[f.unidad]||0)+f.total;uC[f.unidad][f.categoria]=(uC[f.unidad][f.categoria]||0)+f.total;}});
+  return`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">${unidades.map(u=>{
+    const t=uT[u.placa]||0;const cats=Object.entries(uC[u.placa]||{}).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    return`<div class="kpi" style="border-left:3px solid var(--accent)"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px"><span class="placa-badge">?? ${u.placa}</span><span style="font-size:11px;color:var(--muted2)">${u.tipo}</span></div><div class="kpi-value" style="font-size:20px">${L(t)}</div><div class="kpi-sub" style="margin-bottom:12px">Conductor: ${u.conductor}</div>${cats.map(([c,v])=>`<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--muted2)">${catL[c]||c}</span><span>${L(v)}</span></div>`).join('')}<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Km: ${u.km.toLocaleString()}</span><span style="color:var(--muted)">L/100km: ${u.km>0?(t/u.km*100).toFixed(1):'—'}</span></div></div>`;
+  }).join('')}</div>`;
+}
+
+// ======== ALERTAS ========
+function renderAlertas(){
+  const venc=facturas.filter(f=>f.estado==='vencido');
+  const pv=facturas.filter(f=>{if(f.estado==='pendiente'&&f.vencimiento){const d=(new Date(f.vencimiento)-new Date())/86400000;return d>=0&&d<=7;}return false;});
+  return`<div class="section-title">Alertas activas</div><div class="alerts-list">
+    ${venc.map(f=>`<div class="alert-item"><div class="alert-icon danger">❗</div><div class="alert-text"><div class="alert-title">Factura vencida — ${f.proveedor}</div><div class="alert-desc">${L(f.total)} · ${f.numero}${f.unidad?' · '+f.unidad:''}</div></div><div class="alert-time">${f.fecha}</div></div>`).join('')}
+    ${pv.map(f=>{const d=Math.round((new Date(f.vencimiento)-new Date())/86400000);return`<div class="alert-item"><div class="alert-icon warn">⚠️</div><div class="alert-text"><div class="alert-title">Vence en ${d} día(s) — ${f.proveedor}</div><div class="alert-desc">${L(f.total)} · ${f.numero}</div></div><div class="alert-time">Vence: ${f.vencimiento}</div></div>`;}).join('')}
+    <div class="alert-item"><div class="alert-icon warn">??</div><div class="alert-text"><div class="alert-title">Posible factura duplicada</div><div class="alert-desc">Energía del Norte SA tiene 3 facturas en Marzo — revisar</div></div><div class="alert-time">Hoy</div></div>
+  </div>`;
+}
+
+// ======== REPORTES ========
+function renderReportes(){
+  return`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+    ${[['?? Reporte mensual','Gastos e ingresos del mes en Excel','⬇ Excel'],['?? Para contador','RTN e ISV separado por período','⬇ PDF'],['?? Por unidad','Detalle de gastos por placa','⬇ Excel']].map(([t,d,b])=>`<div class="kpi" style="cursor:pointer" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><div class="kpi-label">${t}</div><div style="font-size:13px;color:var(--muted2);margin-top:8px">${d}</div><div style="margin-top:16px"><span class="btn btn-ghost btn-sm">${b}</span></div></div>`).join('')}
+  </div>`;
+}
+
+// ======== CONFIG ========
+function renderApiKeyConfigStatus(){
+  const el=document.getElementById('apikey-config-status');
+  if(!el)return;
+  if(getApiKey()){el.textContent='✅ Configurada';el.style.background='rgba(34,197,94,.12)';el.style.color='var(--green)';}
+  else{el.textContent='No configurada';el.style.background='rgba(239,68,68,.12)';el.style.color='var(--red)';}
+}
+function renderConfig(){
+  const ok=!!gToken;
+  const now=new Date();
+  const curYear=now.getFullYear();
+  const curMonth=String(now.getMonth()+1).padStart(2,'0')+' - '+MESES[now.getMonth()];
+  return`
+  <div class="config-card">
+    <div class="config-title">?? Sesión Google <span class="config-status ${ok?'config-connected':'config-disconnected'}">${ok?'Activa':'Sin sesión'}</span></div>
+    ${ok?`
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        ${gUser?.picture?`<img src="${gUser.picture}" style="width:40px;height:40px;border-radius:50%">`:`<div style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;font-family:var(--font-head);font-weight:700">${(gUser?.name||'?')[0]}</div>`}
+        <div><div style="font-weight:500">${gUser?.name||'Usuario'}</div><div style="font-size:12px;color:var(--muted2)">${gUser?.email||''}</div></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}" target="_blank" class="btn btn-ghost btn-sm">?? Abrir Google Sheet</a>
+        <a href="https://drive.google.com/drive/folders/${CONFIG.DRIVE_FOLDER_ID}" target="_blank" class="btn btn-ghost btn-sm">?? Abrir Drive</a>
+        <button onclick="openSetupModal()" class="btn btn-ghost btn-sm">⚙️ Editar credenciales</button>
+        <button onclick="signOut()" class="btn btn-ghost btn-sm" style="color:var(--red);border-color:rgba(239,68,68,.3)">↩ Cerrar sesión</button>
+      </div>`:
+    `<p style="font-size:13px;color:var(--muted2);margin-bottom:16px">Inicia sesión con Google Workspace para sincronizar automáticamente.</p>
+     <button class="btn btn-google" onclick="startLogin()"><svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.31z"/></svg>Conectar con Google</button>`}
+  </div>
+  <div class="config-card">
+    <div class="config-title">?? Estructura de Google Drive</div>
+    <p style="font-size:12px;color:var(--muted2);margin-bottom:12px">Las carpetas se crean automáticamente al guardar cada factura. No necesitas crear nada manualmente.</p>
+    <div class="folder-tree">
+      <div><span class="folder">?? FlotaControl — Imágenes</span> <span style="font-size:10px;color:var(--muted)">(tu carpeta raíz)</span></div>
+      <div style="margin-left:20px"><span class="folder">?? ${curYear}</span></div>
+      <div style="margin-left:40px"><span class="active-folder">?? ${curMonth}</span> <span style="font-size:10px;color:var(--green)">← mes actual</span></div>
+      <div style="margin-left:60px"><span class="file">?? factura-ABJ1234-EnergíaNorte-20260322.jpg</span></div>
+      <div style="margin-left:60px"><span class="file">?? factura-CDE5678-RepuestosMotor-20260318.jpg</span></div>
+      <div style="margin-left:40px"><span class="folder">?? 02 - Febrero</span></div>
+      <div style="margin-left:40px"><span class="folder">?? 01 - Enero</span></div>
+      <div style="margin-left:20px"><span class="folder">?? ${curYear-1}</span></div>
+    </div>
+  </div>
+  <div class="config-card">
+    <div class="config-title">?? Estructura de Google Sheets</div>
+    <p style="font-size:12px;color:var(--muted2);margin-bottom:12px">Una pestaña por año, creada automáticamente. Dentro de cada pestaña puedes usar los filtros nativos de Google Sheets por mes, placa, proveedor o categoría.</p>
+    <div class="folder-tree">
+      <div><span class="folder">?? FlotaControl — Facturas</span></div>
+      <div style="margin-left:20px"><span class="active-folder">?? Facturas ${curYear}</span> <span style="font-size:10px;color:var(--green)">← año actual (con filtro por mes)</span></div>
+      <div style="margin-left:20px"><span class="folder">?? Facturas ${curYear-1}</span></div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:12px">?? En Google Sheets: clic en el ícono de filtro (▼) en el encabezado "Fecha" para filtrar por mes rápidamente.</p>
+  </div>
+  <div class="config-card">
+    <div class="config-title">?? API Key de Anthropic (lectura de facturas)
+      <span class="config-status" id="apikey-config-status" style="background:rgba(239,68,68,.12);color:var(--red)">No configurada</span>
+    </div>
+    <p style="font-size:13px;color:var(--muted2);margin-bottom:16px">Necesaria para que la IA lea automáticamente las fotos de facturas. Se guarda solo en este navegador.</p>
+    <button class="btn btn-ghost btn-sm" onclick="openApiKeyModal();setTimeout(renderApiKeyConfigStatus,100)">?? Configurar API Key</button>
+  </div>
+  <div class="config-card">
+    <div class="config-title">?? Estado actual</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      ${[['Facturas año',facturas.length],['Con imagen',facturas.filter(f=>f.imagen_local||f.imagen_url).length],['Unidades',unidades.length]].map(([l,v])=>`<div style="background:var(--surface2);border-radius:8px;padding:14px;text-align:center"><div style="font-family:var(--font-head);font-size:24px;font-weight:700">${v}</div><div style="color:var(--muted2);font-size:12px;margin-top:4px">${l}</div></div>`).join('')}
+    </div>
+  </div>`;
+}
+// ======== IMAGE VIEWER ========
+function openViewer(id){
+  const f=facturas.find(x=>x.id===id);if(!f)return;
+  document.getElementById('viewer-title').textContent=`${f.numero} — ${f.proveedor} — ${f.fecha}`;
+  const dl=document.getElementById('viewer-dl'),dr=document.getElementById('viewer-drive');
+  if(f.imagen_local){dl.href=f.imagen_local;dl.download=`factura-${f.numero}.jpg`;dl.style.display='';}else dl.style.display='none';
+  if(f.imagen_url){dr.href=f.imagen_url;dr.style.display='';}else dr.style.display='none';
+  const body=document.getElementById('viewer-body');
+  if(f.imagen_local)body.innerHTML=`<img class="viewer-img" src="${f.imagen_local}" alt="Factura">`;
+  else if(f.imagen_url)body.innerHTML=`<div class="viewer-no-img"><div>☁</div><p style="margin-bottom:12px">Imagen guardada en Google Drive</p><a href="${f.imagen_url}" target="_blank" class="btn btn-ghost btn-sm">Abrir en Drive</a></div>`;
+  else body.innerHTML=`<div class="viewer-no-img"><div>??</div><p>Sin imagen adjunta</p></div>`;
+  document.getElementById('viewer').classList.add('open');
+}
+function closeViewer(){document.getElementById('viewer').classList.remove('open');}
+document.getElementById('viewer').addEventListener('click',e=>{if(e.target===document.getElementById('viewer'))closeViewer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeViewer();closeModal();}});
+
+// ======== MODAL ========
+function openModal(){
+  document.getElementById('modal').classList.add('open');
+  ['invoice-form','img-preview','ai-state','ai-result'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('step-upload').style.display='block';
+  document.getElementById('manual-link').style.display='block';
+  currentImageData=null;
+  document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+function showManualForm(){document.getElementById('step-upload').style.display='none';document.getElementById('manual-link').style.display='none';document.getElementById('invoice-form').style.display='block';}
+
+async function handleFile(input){
+  const file=input.files[0]; if(!file) return;
+  currentMime = file.type.startsWith('image/') ? file.type : 'image/jpeg';
+  const fr = new FileReader();
+  fr.onload = function(e){
+    currentImageData = e.target.result;
+    if(file.type.startsWith('image/')){
+      document.getElementById('img-preview').src = currentImageData;
+      document.getElementById('img-preview').style.display = 'block';
+    }
+  };
+  fr.readAsDataURL(file);
+
+  document.getElementById('manual-link').style.display = 'none';
+  const apiKey = getApiKey();
+  if(!apiKey){
+    document.getElementById('ai-state').style.display = 'none';
+    document.getElementById('ai-result').style.display = 'block';
+    document.getElementById('ai-result').innerHTML = '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:12px;font-size:13px;color:var(--amber)">Sin API key configurada. <button onclick="openApiKeyModal()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:600;font-family:var(--font-body);font-size:13px">Configurar ahora</button></div>';
+    document.getElementById('invoice-form').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('ai-state').style.display = 'block';
+  document.getElementById('ai-state').innerHTML = '<div class="processing-state"><div class="spinner"></div><div class="processing-text">Analizando tu factura...</div></div>';
+
+  try {
+    const b64 = await new Promise(function(res, rej){
+      const r = new FileReader();
+      r.onload = function(){ res(r.result.split(',')[1]); };
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const promptText = 'Extrae los datos de esta factura. Responde SOLO con JSON valido sin markdown. Formato: {"numero":"","fecha":"YYYY-MM-DD","proveedor":"","rtn":"","subtotal":0,"isv":0,"total":0,"notas":"descripcion breve"}';
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: currentMime, data: b64 } },
+            { type: 'text', text: promptText }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = data.content ? data.content.map(function(c){ return c.text||''; }).join('') : '';
+    let ex = {};
+    try { ex = JSON.parse(text.replace(/```json|```/g,'').trim()); } catch(e){}
+
+    ['numero','fecha','proveedor','rtn','subtotal','isv','total','notas'].forEach(function(k){
+      if(ex[k]) document.getElementById('f-'+k).value = ex[k];
+    });
+
+    const found = ['numero','fecha','proveedor','subtotal','total'].filter(function(k){ return ex[k]; }).length;
+    document.getElementById('ai-state').style.display = 'none';
+    document.getElementById('ai-result').style.display = 'block';
+    document.getElementById('ai-result').innerHTML = '<div class="ai-preview"><div class="ai-badge">IA — '+found+' campos extraidos</div></div>';
+    document.getElementById('invoice-form').style.display = 'block';
+
+  } catch(err) {
+    document.getElementById('ai-state').style.display = 'none';
+    document.getElementById('ai-result').style.display = 'block';
+    document.getElementById('ai-result').innerHTML = '<div style="color:var(--red);font-size:13px;padding:10px">No se pudo analizar la imagen. Ingresa los datos manualmente.</div>';
+    document.getElementById('invoice-form').style.display = 'block';
+  }
+}
+
+function calcTotal(){const s=parseFloat(document.getElementById('f-subtotal').value)||0,v=parseFloat(document.getElementById('f-isv').value)||0;document.getElementById('f-total').value=(s+v).toFixed(2);}
+
+
+function openSplitModal(fId){
+  var f=fId?facturas.find(function(x){ return x.id===fId; }):null;
+  splitData=f?JSON.parse(JSON.stringify(f)):null;
+  document.getElementById('split-modal').classList.add('open');
+  document.getElementById('sp-numero').value=f?f.numero:''; document.getElementById('sp-fecha').value=f?f.fecha:new Date().toISOString().split('T')[0]; document.getElementById('sp-proveedor').value=f?f.proveedor:''; document.getElementById('sp-rtn').value=f?f.rtn:''; document.getElementById('sp-pago').value=f?f.pago:'efectivo'; document.getElementById('sp-categoria').value=f?f.categoria:'diesel'; document.getElementById('sp-total').value=f?f.total:'';
+  document.getElementById('sp-rows').innerHTML=''; addSplitRow(); addSplitRow(); calcSplitRemainder();
+}
+function closeSplitModal(){ document.getElementById('split-modal').classList.remove('open'); }
+function addSplitRow(){
+  var div=document.createElement('div'); div.style.cssText='display:flex;gap:10px;align-items:center;margin-bottom:10px';
+  var opts=unidades.map(function(u){ return '<option value="'+u.placa+'">'+u.placa+' - '+u.conductor+'</option>'; }).join('');
+  div.innerHTML='<select style="flex:1.5;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px"><option value="">Sin asignar</option>'+opts+'</select><input type="number" placeholder="Monto" oninput="calcSplitRemainder()" style="width:130px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px"><input type="text" placeholder="Notas" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px"><button onclick="this.parentElement.remove();calcSplitRemainder()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--red);border-radius:6px;padding:6px 10px;cursor:pointer">x</button>';
+  document.getElementById('sp-rows').appendChild(div);
+}
+function calcSplitRemainder(){ var total=parseFloat(document.getElementById('sp-total').value)||0,suma=0; Array.from(document.getElementById('sp-rows').children).forEach(function(row){ suma+=parseFloat(row.querySelectorAll('input')[0].value)||0; }); var resto=total-suma,el=document.getElementById('sp-remainder'); el.textContent='Total: '+L(total)+'  Asignado: '+L(suma)+'  Restante: '+L(Math.abs(resto))+(resto<-0.01?' (excedido)':resto>0.01?' (falta)':' OK'); el.style.color=Math.abs(resto)<0.01?'var(--green)':resto<0?'var(--red)':'var(--amber)'; }
+function saveSplitInvoice(){
+  var total=parseFloat(document.getElementById('sp-total').value)||0,prov=document.getElementById('sp-proveedor').value;
+  if(!prov||!total){ alert('Completa el proveedor y el total.'); return; }
+  var partes=[]; Array.from(document.getElementById('sp-rows').children).forEach(function(row){ var monto=parseFloat(row.querySelectorAll('input')[0].value)||0; if(monto>0) partes.push({placa:row.querySelectorAll('select')[0].value,monto:monto,nota:row.querySelectorAll('input')[1].value||''}); });
+  if(partes.length===0){ alert('Agrega al menos una unidad con monto.'); return; }
+  var suma=partes.reduce(function(s,p){ return s+p.monto; },0);
+  if(Math.abs(suma-total)>1){ if(!confirm('La suma difiere del total. Continuar?')) return; }
+  var base={numero:document.getElementById('sp-numero').value||('SPLIT-'+Date.now()),fecha:document.getElementById('sp-fecha').value||new Date().toISOString().split('T')[0],proveedor:prov,rtn:document.getElementById('sp-rtn').value,pago:document.getElementById('sp-pago').value,categoria:document.getElementById('sp-categoria').value,imagen_local:null,imagen_url:'',drive_id:'',drive_folder:'',vencimiento:'',estado:'pagado'};
+  var promises=partes.map(function(p,i){ var sub=parseFloat((p.monto/1.15).toFixed(2)); var f=Object.assign({},base,{id:facturas.length+1+i,subtotal:sub,isv:parseFloat((p.monto-sub).toFixed(2)),total:p.monto,unidad:p.placa,notas:p.nota||(partes.length>1?'Parte '+(i+1)+'/'+partes.length:'')}); facturas.push(f); return gToken?appendToSheet(f):Promise.resolve(false); });
+  Promise.all(promises).then(function(){ toast('Factura dividida en '+partes.length+' entradas','success'); closeSplitModal(); showPage('facturas'); });
+}
+
+function openApiKeyModal(){
+  var key=getApiKey(), nk=prompt('API Key de Anthropic (sk-ant-...):\nActual: '+(key?'***'+key.slice(-6):'no configurada'));
+  if(nk===null) return; if(!nk.startsWith('sk-ant-')){ alert('Debe empezar con sk-ant-'); return; }
+  localStorage.setItem('fc_anthropic_key',nk.trim()); toast('API Key guardada','success');
+}
+
+window.onload=function(){
+  document.getElementById('cfg-save-btn').onclick=saveSetup;
+  document.getElementById('btn-google-login').onclick=startGoogleLogin;
+  document.getElementById('btn-offline').onclick=enterOffline;
+  document.getElementById('btn-edit-config').onclick=showSetupScreen;
+  document.getElementById('modal').addEventListener('click',function(e){ if(e.target===document.getElementById('modal')) closeModal(); });
+  document.getElementById('split-modal').addEventListener('click',function(e){ if(e.target===document.getElementById('split-modal')) closeSplitModal(); });
+  document.getElementById('viewer').addEventListener('click',function(e){ if(e.target===document.getElementById('viewer')) closeViewer(); });
+  if(allConfigured()){ showLoginScreen(); } else { showSetupScreen(); }
+};
+</script>
+</body>
+</html
+function saveInvoice(){
+  var prov=document.getElementById('f-proveedor').value,total=parseFloat(document.getElementById('f-total').value)||0;
+  if(!prov||!total){ alert('Completa al menos el proveedor y el total.'); return; }
+  var btn=document.getElementById('btn-save'); btn.disabled=true; btn.textContent='Guardando...';
+  var fecha=document.getElementById('f-fecha').value||new Date().toISOString().split('T')[0];
+  var f={id:facturas.length+1,numero:document.getElementById('f-numero').value||('BORRADOR-'+Date.now()),fecha:fecha,proveedor:prov,rtn:document.getElementById('f-rtn').value,subtotal:parseFloat(document.getElementById('f-subtotal').value)||0,isv:parseFloat(document.getElementById('f-isv').value)||0,total:total,pago:document.getElementById('f-pago').value,categoria:document.getElementById('f-categoria').value,unidad:document.getElementById('f-unidad').value,estado:document.getElementById('f-estado').value,notas:document.getElementById('f-notas').value,vencimiento:document.getElementById('f-vencimiento').value,imagen_local:currentImageData||null,imagen_url:'',drive_id:'',drive_folder:''};
+  var p;
+  if(currentImageData&&gToken){ btn.textContent='Subiendo imagen...'; var uc=(f.unidad||'SIN').replace('-',''),pc=prov.replace(/[^a-zA-Z0-9]/g,'').substring(0,10),fc=fecha.replace(/-/g,''); p=getFolderForDate(fecha).then(function(fId){ return uploadToDrive(currentImageData.split(',')[1],'factura-'+uc+'-'+pc+'-'+fc+'.jpg',currentMime,fId); }).then(function(r){ if(r){ f.imagen_url=r.webViewLink||''; f.drive_id=r.id||''; } toast(r?'Imagen en Drive':'Error subiendo imagen',r?'success':'error'); return f; }); }
+  else { p=Promise.resolve(f); }
+  p.then(function(f){ if(gToken){ btn.textContent='Guardando en Sheets...'; return appendToSheet(f).then(function(ok){ toast(ok?'Guardado en Sheets':'Error en Sheets',ok?'success':'error'); return f; }); } return f; })
+   .then(function(f){ facturas.push(f); btn.disabled=false; btn.textContent='Guardar Factura'; closeModal(); showPage('facturas'); });
+}
+>
